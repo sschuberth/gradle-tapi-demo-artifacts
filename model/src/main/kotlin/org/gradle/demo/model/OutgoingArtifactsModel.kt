@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.demo.model;
 
-import java.io.File;
-import java.util.List;
+package org.gradle.demo.model
 
-public interface OutgoingArtifactsModel {
-    List<File> getArtifacts();
+import java.io.File
+
+interface OutgoingArtifactsModel {
+    fun getArtifacts(): List<File>
 }

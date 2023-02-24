@@ -13,21 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gradle.demo.model;
 
-import java.io.File;
-import java.io.Serializable;
-import java.util.List;
+package org.gradle.demo.model
 
-public class DefaultOutgoingArtifactsModel implements OutgoingArtifactsModel, Serializable {
-    private final List<File> artifacts;
+import java.io.File
+import java.io.Serializable
 
-    public DefaultOutgoingArtifactsModel(List<File> artifacts) {
-        this.artifacts = artifacts;
-    }
-
-    @Override
-    public List<File> getArtifacts() {
-        return artifacts;
-    }
+class DefaultOutgoingArtifactsModel(private val artifacts: List<File>) : OutgoingArtifactsModel, Serializable {
+    override fun getArtifacts(): List<File> = artifacts
 }

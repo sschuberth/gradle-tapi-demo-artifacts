@@ -25,6 +25,10 @@ gradlePlugin {
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     implementation(project(":model"))
 }

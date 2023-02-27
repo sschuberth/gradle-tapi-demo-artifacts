@@ -19,19 +19,37 @@ package org.gradle.demo.tapi
 import org.gradle.demo.model.OutgoingArtifactsModel
 import org.gradle.demo.plugin.Beacon
 import org.gradle.tooling.GradleConnector
+import org.gradle.tooling.internal.consumer.DefaultGradleConnector
 
 import java.io.File
 import java.nio.file.Files
+import java.util.concurrent.TimeUnit
 
 import kotlin.io.path.writeText
 import kotlin.reflect.KClass
 
 fun main(vararg args: String) {
-    val connector = GradleConnector.newConnector().forProjectDirectory(findProjectPath(args))
+    val argsList = args.toMutableList()
+    val debug = argsList.remove("--debug")
+
+    val connector = GradleConnector.newConnector().forProjectDirectory(findProjectPath(argsList))
+
+    if (debug) {
+        if (connector is DefaultGradleConnector) {
+            // For attaching to the Gradle process the daemon has to be disabled, but since passing "--no-daemon" to
+            // "withArguments" below is not supported, "disable" the daemon by setting a very short idle time, see
+            // https://docs.gradle.org/current/userguide/third_party_integration.html#sec:embedding_daemon.
+            connector.daemonMaxIdleTime(1, TimeUnit.SECONDS)
+        }
+    }
 
     connector.connect().use { connection ->
         val customModelBuilder = connection.model(OutgoingArtifactsModel::class.java)
-        customModelBuilder.withArguments("--init-script", copyInitScript().absolutePath)
+        val gradleArgs = listOfNotNull(
+            "--init-script", copyInitScript().absolutePath,
+            "-Dorg.gradle.debug=true".takeIf { debug }
+        )
+        customModelBuilder.withArguments(gradleArgs)
         val model = customModelBuilder.get()
         model.getArtifacts().forEach { artifact ->
             println("artifact = $artifact")
@@ -72,7 +90,7 @@ private fun lookupJar(beaconClass: KClass<*>): File {
     return File(codeSource.location.toURI())
 }
 
-private fun findProjectPath(args: Array<out String>): File {
+private fun findProjectPath(args: List<String>): File {
     if (args.isEmpty()) {
         return File(".").absoluteFile
     }

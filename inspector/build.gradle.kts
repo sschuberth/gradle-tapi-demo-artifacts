@@ -15,12 +15,12 @@
  */
 
 plugins {
-    java
     application
+    kotlin("jvm") version "1.8.10"
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -31,5 +31,5 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass.set("org.gradle.demo.tapi.App")
+    mainClass.set("org.gradle.demo.tapi.AppKt")
 }

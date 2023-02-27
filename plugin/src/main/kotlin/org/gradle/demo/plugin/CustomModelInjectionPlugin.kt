@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-gradle-plugin`
-    kotlin("jvm") version "1.8.10"
-}
+package org.gradle.demo.plugin
 
-gradlePlugin {
-    val myPlugin by plugins.creating {
-        id = "org.gradle.demo.plugin.custom.model"
-        implementationClass = "org.gradle.demo.plugin.CustomModelInjection"
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
+
+import javax.inject.Inject
+
+class CustomModelInjectionPlugin @Inject constructor(
+    private val registry: ToolingModelBuilderRegistry
+) : Plugin<Project> {
+    override fun apply(project: Project) {
+        if (project == project.rootProject) {
+            registry.register(OutgoingArtifactsModelBuilder())
+        }
     }
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation(project(":model"))
 }

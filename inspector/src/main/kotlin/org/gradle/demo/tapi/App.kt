@@ -17,7 +17,7 @@
 package org.gradle.demo.tapi
 
 import org.gradle.demo.model.OutgoingArtifactsModel
-import org.gradle.demo.plugin.Beacon
+import org.gradle.demo.plugin.OutgoingArtifactsModelBuilder
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector
 
@@ -58,7 +58,7 @@ fun main(vararg args: String) {
 }
 
 private fun copyInitScript(): File {
-    val pluginJar = lookupJar(Beacon::class)
+    val pluginJar = lookupJar(OutgoingArtifactsModelBuilder::class)
     val modelJar = lookupJar(OutgoingArtifactsModel::class)
 
     val initGradleResource = object {}.javaClass.getResourceAsStream("/init.gradle")

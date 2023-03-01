@@ -17,6 +17,11 @@
 package org.gradle.demo.plugin
 
 import org.gradle.api.Project
+import org.gradle.api.attributes.Attribute
+import org.gradle.api.attributes.AttributeCompatibilityRule
+import org.gradle.api.attributes.CompatibilityCheckDetails
+import org.gradle.api.internal.ReusableAction
+import org.gradle.api.specs.Specs
 import org.gradle.demo.model.DefaultOutgoingArtifactsModel
 import org.gradle.demo.model.OutgoingArtifactsModel
 import org.gradle.tooling.provider.model.ToolingModelBuilder
@@ -40,6 +45,49 @@ class OutgoingArtifactsModelBuilder : ToolingModelBuilder {
             }
         }
 
+        project.allprojects { p ->
+            val artifactTypeAttr = Attribute.of("artifactType", String::class.java)
+            p.dependencies.attributesSchema.getMatchingStrategy(artifactTypeAttr).compatibilityRules.add(CompatibilityRule::class.java)
+
+            p.configurations.forEach { c ->
+                if (c.isCanBeResolved) {
+                    val copy = c.copyRecursive()
+
+                    copy.attributes {
+                        //it.attribute(Attribute.of("artifactType", String::class.java), "")
+                        it.attribute(Attribute.of("artifactType", String::class.java), "jar")
+                        //it.attribute(Attribute.of("artifactType", String::class.java), "aar")
+                        //it.attribute(Attribute.of("artifactType", String::class.java), "android-lint-local-aar")
+                        //it.attribute(Attribute.of("com.android.build.api.attributes.BuildTypeAttr", String::class.java), "release")
+                        //it.attribute(Attribute.of("com.android.build.gradle.internal.attributes.VariantAttr", String::class.java), "release")
+                        //it.attribute(Attribute.of("org.gradle.jvm.environment", String::class.java), "android")
+                    }
+
+                    val resolvedArtifacts = copy.resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.SATISFIES_ALL)
+                    artifacts += resolvedArtifacts.map { File(it.toString()) }
+
+                    p.logger.quiet(resolvedArtifacts.size.toString())
+                    println(resolvedArtifacts.size.toString())
+
+                    resolvedArtifacts.forEach {
+                        p.logger.quiet(it.toString())
+                        println(it.toString())
+                    }
+                }
+            }
+        }
+
         return DefaultOutgoingArtifactsModel(artifacts.toList())
+    }
+}
+
+class CompatibilityRule : AttributeCompatibilityRule<String>, ReusableAction {
+    override fun execute(details: CompatibilityCheckDetails<String>) {
+        val consumerValue = details.consumerValue
+        val producerValue = details.producerValue
+        if (consumerValue == "jar" && producerValue in listOf("jar", "aar", "apk", "json", "txt")) {
+            details.compatible()
+            return
+        }
     }
 }
